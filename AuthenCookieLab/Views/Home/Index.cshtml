@@ -1,0 +1,134 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+@* <div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div> *@
+<p>
+    <span>使用者:<span id="userName">未登入</span></span>
+    <br />
+    <span>角色:<span id="userRole">未登入</span></span>
+</p>
+
+<fieldset>
+    <legend>Login</legend>
+    <label>Name:</label>
+    <input type="text" name="name" id="name" value="Jhone">
+    <br />
+    <label>Password:</label>
+    <input type="text" name="pwd" id="pwd" value="pwd123">
+    <br />
+    <button id="btnLogin">Login</button>
+</fieldset>
+
+<fieldset>
+    <legend>Authorization</legend>
+    <button id="btnAdmin">Admin</button>
+    <button id="btnUser">User</button>    
+</fieldset>
+
+<fieldset>
+    <legend>Logout</legend>
+    <button id="btnLogout">Logout</button>
+</fieldset>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function (event) {
+        $("#btnLogin").click(
+            async function () {
+                let user = new User({
+                    name : $("#name").val(),
+                    password : $("#pwd").val()
+                })
+                let res = await fetchPromise("POST", "/api/Users/Login", user);
+                if (res.status == 404) alert("輸入有誤，查無使用者或密碼錯誤")
+                else if (res.status == 200) {
+                    alert("成功登入");
+                    res = await res.json();
+                    //console.log(res);
+                    $("#userName").text(res.name);
+                    $("#userRole").html(res.role);
+                }
+                else alert("錯誤發生，請聯絡管理員")
+            }
+        );
+
+        $("#btnAdmin").click(
+            async function() {
+                console.log("btnAdmin clicked");
+                let res = await fetchPromise("GET", "/api/Users/AdminCheck");
+                if (res.status == 200) alert("擁有 Admin 權限")
+                else alert("錯誤發生，請聯絡管理員")
+            }
+        );
+        $("#btnUser").click(
+            async function () {
+                console.log("btnUser clicked");
+                let res = await fetchPromise("GET", "/api/Users/UserCheck");
+                if (res.status == 200) alert("擁有 User 權限")
+                else alert("錯誤發生，請聯絡管理員")
+            }
+        );
+
+
+        $("#btnLogout").click(
+            async function () {
+                console.log("btnLogout clicked");
+                let res = await fetchPromise("GET", "/api/Users/Logout");
+                if (res.status == 200) { 
+                    alert("成功登出");
+                    $("#userName").text("未登入");
+                    $("#userRole").html("未登入");
+                }
+                else alert("錯誤發生，請聯絡管理員")
+            }
+        );
+    });
+</script>
+
+<script>
+    // 前後Server相同
+    function getHost() {
+        var url = window.location.href;
+        var arr = url.split("/");
+        return arr[0] + "//" + arr[2]
+    }
+    const apiResourceName = getHost();
+    /**
+     * {string} httpMethod 'GET'or'POST'
+     * {string} path 要呼叫的 api 網址 path (如果是GET可能還會有 query string 參數部分) ex:/api...
+     * {*} data Body POST 要傳遞的資訊
+     */
+	function fetchPromise( httpMethod, path, data = {}) {
+		var RequestInit = {
+			method: `${httpMethod}`,
+            headers: { 'Content-Type': 'application/json' }
+		};
+
+		if (httpMethod.toUpperCase() == 'POST') {
+			var bodyData = (data == null) ? {} : data;
+			RequestInit.body = JSON.stringify(bodyData);
+		}
+
+        return new Promise((resolve, reject) => {
+			fetch(`${apiResourceName}${path}`, RequestInit)
+                .then((res) => { resolve(res); })
+                .catch((e) => { reject(e); });
+		});
+	}
+</script>
+
+<script>
+    class User {
+        constructor(data) {
+            this.Id = (data.id != null) ? data.id : 0;
+            this.Name = (data.name != null) ? data.name : "";
+            this.MobilePhone = (data.mobilePhone != null) ? data.mobilePhone : "";
+            this.Role = (data.role != null) ? data.role : "";
+            this.Password = (data.password != null) ? data.password : "";
+            this.Email = (data.email != null) ? data.email : "";
+        }
+    }
+</script>
