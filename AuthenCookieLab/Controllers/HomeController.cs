@@ -1,6 +1,7 @@
 ﻿using AuthenCookieLab.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace AuthenCookieLab.Controllers
 {
@@ -15,6 +16,10 @@ namespace AuthenCookieLab.Controllers
 
         public IActionResult Index()
         {
+            var user = new User();
+            user.Name = User.FindFirstValue(ClaimTypes.Name);
+            user.Role = User.FindFirstValue(ClaimTypes.Role);
+            ViewBag.user = user;
             return View();
         }
 

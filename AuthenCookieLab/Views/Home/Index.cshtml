@@ -1,5 +1,10 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    var isUserLogin = ViewBag.user.Name != null;
+    var userNameTxt = (isUserLogin) ? ViewBag.user.Name : "未登入";
+    var useRoleTxt = (isUserLogin) ? ViewBag.user.Role : "未登入";
+    var displayLogin = (isUserLogin) ? "none" : "";
+    var displayLogout = (isUserLogin) ? "" : "none";
 }
 
 @* <div class="text-center">
@@ -7,12 +12,13 @@
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div> *@
 <p>
-    <span>使用者:<span id="userName">未登入</span></span>
+    <span>使用者:<span id="userName">@userNameTxt</span></span>
     <br />
-    <span>角色:<span id="userRole">未登入</span></span>
+    <span>角色:<span id="userRole">@useRoleTxt</span></span>
 </p>
+<hr />
 
-<fieldset>
+<fieldset id="loginField" style="display:@displayLogin">
     <legend>Login</legend>
     <label>Name:</label>
     <input type="text" name="name" id="name" value="Jhone">
@@ -23,16 +29,19 @@
     <button id="btnLogin">Login</button>
 </fieldset>
 
+<fieldset id="logoutField" style="display:@displayLogout;">
+    <legend>Logout</legend>
+    <button id="btnLogout">Logout</button>
+</fieldset>
+
+<hr />
+
 <fieldset>
     <legend>Authorization</legend>
     <button id="btnAdmin">Admin</button>
     <button id="btnUser">User</button>    
 </fieldset>
 
-<fieldset>
-    <legend>Logout</legend>
-    <button id="btnLogout">Logout</button>
-</fieldset>
 
 <script>
     document.addEventListener("DOMContentLoaded", function (event) {
@@ -47,9 +56,12 @@
                 else if (res.status == 200) {
                     alert("成功登入");
                     res = await res.json();
-                    //console.log(res);
+                    // 顯示使用者
                     $("#userName").text(res.name);
                     $("#userRole").html(res.role);
+                    // 隱藏登入區,顯示登出區
+                    $("#loginField").css("display", "none");
+                    $("#logoutField").css("display", "");
                 }
                 else alert("錯誤發生，請聯絡管理員")
             }
@@ -60,6 +72,7 @@
                 console.log("btnAdmin clicked");
                 let res = await fetchPromise("GET", "/api/Users/AdminCheck");
                 if (res.status == 200) alert("擁有 Admin 權限")
+                else if (res.status == 404) alert("沒有權限")
                 else alert("錯誤發生，請聯絡管理員")
             }
         );
@@ -68,6 +81,7 @@
                 console.log("btnUser clicked");
                 let res = await fetchPromise("GET", "/api/Users/UserCheck");
                 if (res.status == 200) alert("擁有 User 權限")
+                else if (res.status == 404) alert("沒有權限")
                 else alert("錯誤發生，請聯絡管理員")
             }
         );
@@ -79,8 +93,12 @@
                 let res = await fetchPromise("GET", "/api/Users/Logout");
                 if (res.status == 200) { 
                     alert("成功登出");
+                    // 顯示未登入
                     $("#userName").text("未登入");
                     $("#userRole").html("未登入");
+                    // 顯示登入區,隱藏登出區
+                    $("#loginField").css("display", "");
+                    $("#logoutField").css("display", "none");
                 }
                 else alert("錯誤發生，請聯絡管理員")
             }
@@ -101,7 +119,7 @@
      * {string} path 要呼叫的 api 網址 path (如果是GET可能還會有 query string 參數部分) ex:/api...
      * {*} data Body POST 要傳遞的資訊
      */
-	function fetchPromise( httpMethod, path, data = {}) {
+	async function fetchPromise( httpMethod, path, data = {}) {
 		var RequestInit = {
 			method: `${httpMethod}`,
             headers: { 'Content-Type': 'application/json' }
@@ -112,11 +130,7 @@
 			RequestInit.body = JSON.stringify(bodyData);
 		}
 
-        return new Promise((resolve, reject) => {
-			fetch(`${apiResourceName}${path}`, RequestInit)
-                .then((res) => { resolve(res); })
-                .catch((e) => { reject(e); });
-		});
+        return await fetch(`${apiResourceName}${path}`, RequestInit);
 	}
 </script>
 

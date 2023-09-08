@@ -14,12 +14,12 @@ builder.Services.AddDbContext<LabDBContext>(options =>
 });
 
 // setup CookieAuthentication service
-//builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-//    .AddCookie(options =>
-//    {
-//        options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
-//        options.SlidingExpiration = true;
-//    });
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+        options.SlidingExpiration = true;
+    });
 
 
 var app = builder.Build();
@@ -37,6 +37,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
