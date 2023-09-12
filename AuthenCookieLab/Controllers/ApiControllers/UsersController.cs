@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authentication;
 
 namespace AuthenCookieLab.Controllers.ApiControllers
 {
-    [Authorize(Roles = "Admin, User")]
+    [Authorize]
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -69,7 +69,7 @@ namespace AuthenCookieLab.Controllers.ApiControllers
         [HttpGet]
         public ActionResult AdminCheck()
         {
-            // 取 cookie 使用者資料
+            // 取 ClaimsPrincipal 使用者資料
             var userId = User.FindFirstValue(ClaimTypes.Email);
             return Ok(userId);
         }
@@ -78,7 +78,7 @@ namespace AuthenCookieLab.Controllers.ApiControllers
         [HttpGet]
         public ActionResult UserCheck()
         {
-            // 取 cookie 使用者資料
+            // 取 ClaimsPrincipal 使用者資料
             var userId = User.FindFirstValue("Id");
             return Ok(userId);
         }
