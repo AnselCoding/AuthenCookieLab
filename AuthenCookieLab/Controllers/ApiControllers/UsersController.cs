@@ -70,8 +70,8 @@ namespace AuthenCookieLab.Controllers.ApiControllers
         public ActionResult AdminCheck()
         {
             // 取 ClaimsPrincipal 使用者資料
-            var userId = User.FindFirstValue(ClaimTypes.Email);
-            return Ok(userId);
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            return Ok(email);
         }
 
         // GET: api/Users/UserCheck
